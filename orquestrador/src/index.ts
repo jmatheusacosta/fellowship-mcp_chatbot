@@ -3,6 +3,8 @@ import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { mcpService } from './mcpClient';
+import { authenticateToken } from './authMiddleware';
+import { chatHandler } from './chatController';
 
 dotenv.config();
 
@@ -29,6 +31,9 @@ app.post('/login', (req: Request, res: Response) => {
 
   return res.json({ token, user_id, username });
 });
+
+// Rota de Chat
+app.post('/chat', authenticateToken, chatHandler);
 
 app.listen(PORT, async () => {
   console.log(`Servidor Orquestrador rodando na porta ${PORT}`);
