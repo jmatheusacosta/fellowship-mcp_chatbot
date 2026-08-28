@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { mcpService } from './mcpClient';
 
 dotenv.config();
 
@@ -29,6 +30,9 @@ app.post('/login', (req: Request, res: Response) => {
   return res.json({ token, user_id, username });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Servidor Orquestrador rodando na porta ${PORT}`);
+  
+  // Conecta ao servidor MCP assim que o orquestrador subir
+  await mcpService.connect();
 });
