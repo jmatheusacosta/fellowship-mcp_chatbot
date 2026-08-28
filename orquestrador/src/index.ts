@@ -37,7 +37,7 @@ app.post('/chat', authenticateToken, chatHandler);
 
 app.listen(PORT, async () => {
   console.log(`Servidor Orquestrador rodando na porta ${PORT}`);
-  
+
   // Conecta ao servidor MCP assim que o orquestrador subir
   await mcpService.connect();
 });
