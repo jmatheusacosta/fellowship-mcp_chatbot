@@ -9,6 +9,7 @@ export interface Usuario {
   id: string;
   nome: string;
   limite: number;
+  limite_restante: number;
 }
 
 export interface Intencao {
@@ -17,17 +18,19 @@ export interface Intencao {
   quantidade: number;
   valor_total: number;
   moeda: string;
-  status: 'pendente' | 'aprovada' | 'rejeitada' | 'cancelada';
+  status: 'pendente' | 'paga' | 'aprovada' | 'rejeitada' | 'cancelada';
   expira_em: string;
+  user_id?: string;
 }
 
 export interface Transacao {
-  id: string;
-  intencaoId: string;
-  usuarioId: string;
+  transacao_id: string;
+  intencao_id: string;
+  user_id: string;
+  metodo_pagamento: 'cartao' | 'pix';
   valor: number;
-  status: 'concluida' | 'falhada';
-  criadoEm: string;
+  status: 'aprovado' | 'recusado' | 'concluida' | 'falhada';
+  data: string;
 }
 
 // Mock de produtos disponíveis no catálogo
@@ -57,16 +60,25 @@ export const usuarios: Usuario[] = [
   {
     id: "usr_001",
     nome: "Carlos Silva",
-    limite: 500.00
+    limite: 500.00,
+    limite_restante: 500.00
   },
   {
     id: "usr_002",
     nome: "Ana Souza",
-    limite: 50.00
+    limite: 50.00,
+    limite_restante: 50.00
   }
 ];
 
 // Arrays em memória para armazenar intenções de compra e transações realizadas
 export const intencoes: Intencao[] = [];
 export const transacoes: Transacao[] = [];
+
+export const db = {
+  produtos,
+  usuarios,
+  intencoes,
+  transacoes,
+};
 
