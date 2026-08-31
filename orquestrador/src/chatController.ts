@@ -88,6 +88,12 @@ export const chatHandler = async (req: Request, res: Response): Promise<void> =>
           console.log(`Gemini solicitou Tool: ${call.name}`);
 
           try {
+            // Injeção de segurança: força o user_id do token nas chamadas críticas
+            if (call.name === 'registrar_intencao' || call.name === 'realizar_compra') {
+              if (!call.args) call.args = {};
+              call.args.user_id = user.user_id;
+            }
+
             // Chama a tool via MCP
             const toolResult = await mcpService.callTool(call.name, call.args);
 
