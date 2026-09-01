@@ -2,24 +2,28 @@ export interface MessagePart {
   text?: string;
   functionCall?: any;
   functionResponse?: any;
+  thought?: boolean;
+  thoughtSignature?: string;
+  [key: string]: any;
 }
 
 export interface ChatMessage {
-  role: 'user' | 'model' | 'function';
-  parts: MessagePart[];
+  role?: string;
+  parts?: MessagePart[] | any[];
+  [key: string]: any;
 }
 
 export class HistoryManager {
-  private histories = new Map<string, ChatMessage[]>();
+  private histories = new Map<string, any[]>();
 
-  getHistory(userId: string): ChatMessage[] {
+  getHistory(userId: string): any[] {
     if (!this.histories.has(userId)) {
       this.histories.set(userId, []);
     }
     return this.histories.get(userId)!;
   }
 
-  addMessage(userId: string, message: ChatMessage): void {
+  addMessage(userId: string, message: any): void {
     const history = this.getHistory(userId);
     history.push(message);
   }

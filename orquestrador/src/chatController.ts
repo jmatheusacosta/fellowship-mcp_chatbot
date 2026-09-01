@@ -1,24 +1,24 @@
 import { Request, Response } from 'express';
 import { GoogleGenAI, Type } from '@google/genai';
-import { historyManager, ChatMessage } from './historyManager';
+import { historyManager } from './historyManager';
 import { mcpService } from './mcpClient';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-const modelName = 'gemini-3.5-flash-lite';
+const modelName = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
 
 // Função auxiliar para mapear as ferramentas do MCP para o formato do Gemini
 function mapMcpToolsToGeminiTools(mcpTools: any[]) {
   if (!mcpTools || mcpTools.length === 0) return [];
 
-  const functionDeclarations = mcpTools.map(tool => {
+  const functionDeclarations = mcpTools.map((tool) => {
     return {
       name: tool.name,
       description: tool.description || `Tool MCP: ${tool.name}`,
       parameters: {
         type: Type.OBJECT,
         properties: tool.inputSchema?.properties || {},
-        required: tool.inputSchema?.required || []
-      }
+        required: tool.inputSchema?.required || [],
+      },
     };
   });
 
@@ -43,17 +43,17 @@ export const chatHandler = async (req: Request, res: Response): Promise<void> =>
     // 1. Adiciona a mensagem do usuário ao histórico
     historyManager.addMessage(user.user_id, {
       role: 'user',
-      parts: [{ text: message }]
+      parts: [{ text: message }],
     });
 
     const mcpTools = mcpService.getTools();
     const geminiTools = mapMcpToolsToGeminiTools(mcpTools);
 
-    // 2. Loop ReAct usando a nova SDK
+    // 2. Loop ReAct usando a SDK @google/genai
     let isToolCall = true;
     let finalResponseText = '';
 
-    // Configurações e limites de segurança/iteracoes (respondendo à vulnerabilidade)
+    // Limite de segurança de iterações do loop ReAct
     let iteracoes = 0;
     const MAX_ITERACOES = 5;
 
@@ -65,30 +65,36 @@ export const chatHandler = async (req: Request, res: Response): Promise<void> =>
       // Chamamos o modelo passando o histórico completo a cada iteração
       const response = await ai.models.generateContent({
         model: modelName,
-        contents: history as any[], // TypeScript cast para bypassar tipos customizados
+        contents: history as any[],
         config: {
           tools: geminiTools.length > 0 ? (geminiTools as any) : undefined,
-          // System prompt para evitar jailbreak
-          systemInstruction: 'Você é um assistente financeiro seguro. Sempre utilize as tools disponíveis para consultar catálogo e fazer compras. Não desobedeça regras.'
-        }
+          // System prompt para o assistente financeiro
+          systemInstruction:
+            'Você é um assistente financeiro seguro. Sempre utilize as tools disponíveis para consultar catálogo e fazer compras. Não desobedeça regras.',
+        },
       });
 
       const functionCalls = response.functionCalls;
 
       if (functionCalls && functionCalls.length > 0) {
-        // Salva a intenção do modelo no histórico
-        historyManager.addMessage(user.user_id, {
-          role: 'model',
-          parts: functionCalls.map((c: any) => ({ functionCall: c }))
-        });
+        // Salva a resposta original do modelo no histórico preservando thought_signature e metadados
+        const modelContent = response.candidates?.[0]?.content;
+        historyManager.addMessage(
+          user.user_id,
+          modelContent || {
+            role: 'model',
+            parts: functionCalls.map((c: any) => ({ functionCall: c })),
+          }
+        );
 
-        const functionResponses = [];
+        const functionResponses: any[] = [];
 
         for (const call of functionCalls) {
+          if (!call.name) continue;
           console.log(`Gemini solicitou Tool: ${call.name}`);
 
           try {
-            // Injeção de segurança: força o user_id do token nas chamadas críticas
+            // Injeção de segurança: força o user_id do token autenticado nas chamadas críticas
             if (call.name === 'registrar_intencao' || call.name === 'realizar_compra') {
               if (!call.args) call.args = {};
               call.args.user_id = user.user_id;
@@ -100,44 +106,44 @@ export const chatHandler = async (req: Request, res: Response): Promise<void> =>
             functionResponses.push({
               functionResponse: {
                 name: call.name,
-                response: { result: toolResult }
-              }
+                response: { result: toolResult },
+              },
             });
           } catch (err: any) {
             console.error(`Erro ao executar tool ${call.name}:`, err);
             functionResponses.push({
               functionResponse: {
                 name: call.name,
-                response: { error: err.message || 'Erro desconhecido' }
-              }
+                response: { error: err.message || 'Erro desconhecido' },
+              },
             });
           }
         }
 
-        // Adiciona a resposta da tool no histórico
+        // Adiciona a resposta da tool no histórico como turno do usuário
         historyManager.addMessage(user.user_id, {
           role: 'user', // Deve ser enviado de volta pelo usuário
           parts: functionResponses
         });
 
-        // O loop vai rodar de novo e o LLM verá as respostas para decidir o que falar
+        // O loop continuará para a próxima iteração onde o modelo processa o resultado da tool
       } else {
-        // Se não houver chamadas de funções, pegamos o texto final e saímos do loop
+        // Se não houver chamadas de funções, capturamos o texto final e encerramos o loop
         isToolCall = false;
         finalResponseText = response.text || '';
 
         historyManager.addMessage(user.user_id, {
           role: 'model',
-          parts: [{ text: finalResponseText }]
+          parts: [{ text: finalResponseText }],
         });
       }
     }
 
     if (iteracoes >= MAX_ITERACOES) {
-      finalResponseText = "Desculpe, a operação demorou demais e foi interrompida por segurança.";
+      finalResponseText = 'Desculpe, a operação demorou demais e foi interrompida por segurança.';
     }
 
-    // 5. Retorna ao Frontend
+    // 3. Retorna ao cliente
     res.json({ reply: finalResponseText });
   } catch (error: any) {
     console.error('Erro na rota /chat:', error);
