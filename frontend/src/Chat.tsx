@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   role: 'user' | 'bot';
@@ -85,7 +86,11 @@ export default function Chat() {
       <div className="chat-messages">
         {messages.map((msg, idx) => (
           <div key={idx} className={`message ${msg.role}`}>
-            {msg.content}
+            {msg.role === 'bot' ? (
+              <ReactMarkdown>{msg.content}</ReactMarkdown>
+            ) : (
+              msg.content
+            )}
           </div>
         ))}
         {loading && <div className="loading">Pensando e consultando ferramentas...</div>}
