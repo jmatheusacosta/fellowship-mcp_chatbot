@@ -71,7 +71,7 @@ Apos isso, abra o navegador e acesse a interface gráfica do frontend (padrao em
 
 ### Fluxo de Uso
 
-1. Na interface do Frontend, realize o Login fornecendo um nome de usuário. Isso irá gerar e armazenar um token JWT seguro.
+1. Na interface do Frontend, realize o Login fornecendo um identificador de usuário cadastrado na base compartilhada (ex: `Carlos Silva`). O sistema validará a existência da conta na fonte única de dados (`shared/db.ts`) e gerará um token JWT assinado contendo o `user_id` oficial (`user_carlos silva`).
 2. Na tela de Chat, converse com o Assistente Financeiro.
 3. Você pode pedir para consultar o catálogo de produtos disponíveis.
 4. Para realizar uma compra, solicite ao assistente indicando qual produto quer comprar. Ele irá consultar o catálogo e acionar a ferramenta `registrar_intencao`.
