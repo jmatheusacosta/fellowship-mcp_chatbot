@@ -58,28 +58,34 @@ export const produtos: Produto[] = [
 // Mock de usuários e seus limites de crédito/compra compatíveis com as convenções de login
 export const usuarios: Usuario[] = [
   {
-    id: "user_usr_001",
+    id: "user_carlos silva",
     nome: "Carlos Silva",
     limite: 500.00,
     limite_restante: 500.00
   },
   {
-    id: "user_usr_002",
+    id: "user_ana souza",
     nome: "Ana Souza",
     limite: 50.00,
     limite_restante: 50.00
   },
   {
-    id: "usr_001",
-    nome: "Carlos Silva",
+    id: "user_joão",
+    nome: "João",
     limite: 500.00,
     limite_restante: 500.00
   },
   {
-    id: "usr_002",
-    nome: "Ana Souza",
-    limite: 50.00,
-    limite_restante: 50.00
+    id: "user_dimitri",
+    nome: "Dimitri",
+    limite: 500.00,
+    limite_restante: 500.00
+  },
+  {
+    id: "user_convidado",
+    nome: "Convidado",
+    limite: 500.00,
+    limite_restante: 500.00
   }
 ];
 
