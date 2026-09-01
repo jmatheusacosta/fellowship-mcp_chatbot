@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
     "dev": "tsx src/index.ts"
   },
   "keywords": [],
@@ -14,6 +15,7 @@
   "dependencies": {
     "@google/genai": "^2.19.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "@shared/db": "file:../shared",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
