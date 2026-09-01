@@ -1,0 +1,12 @@
+{
+  "name": "@shared/db",
+  "version": "1.0.0",
+  "description": "Base de dados compartilhada para Orquestrador e MCP Server",
+  "type": "module",
+  "main": "src/db.ts",
+  "types": "src/db.ts",
+  "exports": {
+    ".": "./src/db.ts"
+  },
+  "license": "ISC"
+}
