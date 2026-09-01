@@ -32,7 +32,7 @@ server.tool(
   "Registra uma nova intenção de compra calculando o valor total e definindo expiração para 10 minutos",
   {
     produto_id: z.string().describe("ID do produto a ser adquirido"),
-    quantidade: z.number().positive().describe("Quantidade do produto (deve ser um número positivo)"),
+    quantidade: z.number().min(1).describe("Quantidade do produto (deve ser um número positivo)"),
     user_id: z.string().optional().describe("ID do usuário associado à intenção (opcional)"),
   },
   async ({ produto_id, quantidade, user_id }) => {

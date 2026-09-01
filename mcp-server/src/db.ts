@@ -55,8 +55,20 @@ export const produtos: Produto[] = [
   }
 ];
 
-// Mock de usuários e seus limites de crédito/compra
+// Mock de usuários e seus limites de crédito/compra compatíveis com as convenções de login
 export const usuarios: Usuario[] = [
+  {
+    id: "user_usr_001",
+    nome: "Carlos Silva",
+    limite: 500.00,
+    limite_restante: 500.00
+  },
+  {
+    id: "user_usr_002",
+    nome: "Ana Souza",
+    limite: 50.00,
+    limite_restante: 50.00
+  },
   {
     id: "usr_001",
     nome: "Carlos Silva",
@@ -81,4 +93,3 @@ export const db = {
   intencoes,
   transacoes,
 };
-
