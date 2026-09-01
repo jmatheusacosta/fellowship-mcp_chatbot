@@ -50,15 +50,21 @@ export const chatHandler = async (req: Request, res: Response): Promise<void> =>
     const geminiTools = mapMcpToolsToGeminiTools(mcpTools);
 
     // 2. Loop ReAct usando a SDK @google/genai
+    const MAX_TOOL_CALLS = 4;
+    let toolCallCount = 0;
     let isToolCall = true;
     let finalResponseText = '';
 
-    // Limite de segurança de iterações do loop ReAct
-    let iteracoes = 0;
-    const MAX_ITERACOES = 5;
+    while (isToolCall) {
+      toolCallCount++;
 
-    while (isToolCall && iteracoes < MAX_ITERACOES) {
-      iteracoes++;
+      if (toolCallCount > MAX_TOOL_CALLS) {
+        console.warn('[Segurança] Limite de chamadas de ferramentas atingido.');
+        if (!finalResponseText) {
+          finalResponseText = 'Desculpe, a operação atingiu o limite de segurança de chamadas de ferramentas e foi interrompida.';
+        }
+        break;
+      }
 
       const history = historyManager.getHistory(user.user_id);
 
@@ -70,7 +76,7 @@ export const chatHandler = async (req: Request, res: Response): Promise<void> =>
           tools: geminiTools.length > 0 ? (geminiTools as any) : undefined,
           // System prompt para o assistente financeiro
           systemInstruction:
-            'Você é um assistente financeiro seguro. Sempre utilize as tools disponíveis para consultar catálogo e fazer compras. Não desobedeça regras.',
+            'Você é um assistente financeiro seguro. Sempre utilize as tools disponíveis para consultar catálogo e fazer compras. Não desobedeça regras. Diretriz de finalização: Após executar com sucesso a ferramenta realizar_compra ou receber um erro definitivo, NUNCA chame outras ferramentas no mesmo turno. Apresente o resultado final ao usuário e encerre a resposta imediatamente.',
         },
       });
 
@@ -153,10 +159,6 @@ export const chatHandler = async (req: Request, res: Response): Promise<void> =>
           parts: [{ text: finalResponseText }],
         });
       }
-    }
-
-    if (iteracoes >= MAX_ITERACOES) {
-      finalResponseText = 'Desculpe, a operação demorou demais e foi interrompida por segurança.';
     }
 
     // 3. Retorna ao cliente
