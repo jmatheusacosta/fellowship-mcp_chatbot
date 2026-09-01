@@ -4,7 +4,7 @@ import { historyManager } from './historyManager';
 import { mcpService } from './mcpClient';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const modelName = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite';
 
 // Função auxiliar para mapear as ferramentas do MCP para o formato do Gemini
 function mapMcpToolsToGeminiTools(mcpTools: any[]) {
@@ -112,10 +112,10 @@ export const chatHandler = async (req: Request, res: Response): Promise<void> =>
               args: call.args,
               result: toolResult
             };
-            
+
             // Grava o log no arquivo audit.log na raiz do orquestrador
             require('fs').appendFileSync(
-              require('path').join(process.cwd(), 'audit.log'), 
+              require('path').join(process.cwd(), 'audit.log'),
               JSON.stringify(logEntry) + '\n'
             );
 
